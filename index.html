@@ -45,12 +45,16 @@
       const clickThroughUrl = xmlDoc
         .getElementsByTagName('ClickThrough')[0]
         .textContent.trim();
+      const clickTrackingUrl = xmlDoc
+        .getElementsByTagName('ClickTracking')[0]
+        .textContent.trim();
       const videoUrl = xmlDoc
         .getElementsByTagName('MediaFile')[0]
         .textContent.trim();
 
       document.getElementById('adVideo').setAttribute('src', `${videoUrl}`);
       document.getElementById('adVideo').addEventListener('click', () => {
+        navigator.sendBeacon(clickTrackingUrl);
         mraid.open(clickThroughUrl);
       });
     </script>
