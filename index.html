@@ -39,16 +39,20 @@
 
       const xmlDoc = xhr.responseXML;
 
-      // Impression URL
       const impressionUrl = xmlDoc
         .getElementsByTagName('Impression')[0]
         .textContent.trim();
-
-      // Set video URL to the one from VAST xml file
+      const clickThroughUrl = xmlDoc
+        .getElementsByTagName('ClickThrough')[0]
+        .textContent.trim();
       const videoUrl = xmlDoc
         .getElementsByTagName('MediaFile')[0]
         .textContent.trim();
+
       document.getElementById('adVideo').setAttribute('src', `${videoUrl}`);
+      document.getElementById('adVideo').addEventListener('click', () => {
+        mraid.open(clickThroughUrl);
+      });
     </script>
 
     <script language="javascript" type="text/javascript">
@@ -145,7 +149,8 @@
 
       function showMyAd() {
         // Count impressions at this point and play video ad
-        console.log('beacon sent!', navigator.sendBeacon(impressionUrl));
+        navigator.sendBeacon(impressionUrl);
+
         document.getElementById('adVideo').load();
         document.getElementById('adVideo').play();
 
