@@ -52,6 +52,16 @@
         .getElementsByTagName('MediaFile')[0]
         .textContent.trim();
 
+      const imageUrl = xmlDoc
+        .getElementsByTagName('StaticResource')[0]
+        .textContent.trim();
+      const companionClickThroughUrl = xmlDoc
+        .getElementsByTagName('CompanionClickThrough')[0]
+        .textContent.trim();
+      const companionClickTrackingUrl = xmlDoc
+        .getElementsByTagName('CompanionClickTracking')[0]
+        .textContent.trim();
+
       document.getElementById('adVideo').setAttribute('src', `${videoUrl}`);
       document.getElementById('adVideo').addEventListener('click', () => {
         navigator.sendBeacon(clickTrackingUrl);
