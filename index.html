@@ -176,7 +176,6 @@
           const videoUrl = xmlDoc
             .getElementsByTagName('MediaFile')[0]
             .textContent.trim();
-
           const companionAd = xmlDoc.getElementsByTagName('CompanionAds')[0];
           const imageUrl = companionAd
             .getElementsByTagName('StaticResource')[0]
@@ -200,7 +199,6 @@
           ad = ad.replace('{{imageClickThroughUrl}}', imageClickThroughUrl);
           ad = ad.replace('{{imageClickTrackingUrl}}', imageClickTrackingUrl);
 
-          /* prepare iframe */
           const iframe = document.createElement('iframe');
           iframe.width = `${WIDTH}px`;
           iframe.height = `${HEIGHT}px`;
@@ -211,7 +209,7 @@
           iframe.contentWindow.document.close();
 
           iframe.addEventListener('load', function () {
-            let mraidbridge = iframe.contentWindow.mraidbridge; // use mraid bridge to connect with mraid
+            const mraidbridge = iframe.contentWindow.mraidbridge; // use mraid bridge to connect with mraid
             // we're ready, fire the ready event
             mraidbridge.setScreenSize(WIDTH, HEIGHT);
             mraidbridge.fireReadyEvent();
