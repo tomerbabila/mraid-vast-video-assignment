@@ -158,12 +158,18 @@
 </body>
 </html>`;
 
-      /* read ad XML */
+      /* 
+send impression: line 115
+video click event: line 129
+image click event: line 124 
+*/
+
+      // read VAST file
       fetch('https://run.mocky.io/v3/a7923657-00d8-4ca8-beb1-e56dcda7079d')
         .then((response) => response.text())
         .then((str) => new window.DOMParser().parseFromString(str, 'text/xml'))
         .then((xmlDoc) => {
-          /* get ad parameters */
+          // get ad parameters
           const impressionUrl = xmlDoc
             .getElementsByTagName('Impression')[0]
             .textContent.trim();
@@ -187,7 +193,7 @@
             .getElementsByTagName('CompanionClickTracking')[0]
             .textContent.trim();
 
-          /* replace macros */
+          // replace macros
           const WIDTH = 740;
           const HEIGHT = 400;
           let ad = adTemplate.replace('{{videoUrl}}', videoUrl);
@@ -199,6 +205,7 @@
           ad = ad.replace('{{imageClickThroughUrl}}', imageClickThroughUrl);
           ad = ad.replace('{{imageClickTrackingUrl}}', imageClickTrackingUrl);
 
+          // create new iframe and modify the template inside
           const iframe = document.createElement('iframe');
           iframe.width = `${WIDTH}px`;
           iframe.height = `${HEIGHT}px`;
@@ -209,13 +216,16 @@
           iframe.contentWindow.document.close();
 
           iframe.addEventListener('load', function () {
-            const mraidbridge = iframe.contentWindow.mraidbridge; // use mraid bridge to connect with mraid
-            // we're ready, fire the ready event
+            // use mraid bridge to connect with mraid
+            const mraidbridge = iframe.contentWindow.mraidbridge;
             mraidbridge.setScreenSize(WIDTH, HEIGHT);
+
+            // we're ready, fire the ready event
             mraidbridge.fireReadyEvent();
             mraidbridge.fireChangeEvent({ viewable: true });
           });
 
+          // listen to events from the ad itself
           window.addEventListener(
             'message',
             (event) => {
