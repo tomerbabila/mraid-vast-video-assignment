@@ -163,13 +163,6 @@
             .getElementsByTagName('MediaFile')[0]
             .textContent.trim();
 
-          console.log(
-            impressionUrl,
-            videoUrl,
-            clickTrackingUrl,
-            clickThroughUrl
-          );
-
           const companionAd = xmlDoc.getElementsByTagName('CompanionAds')[0];
           const imageUrl = companionAd
             .getElementsByTagName('StaticResource')[0]
@@ -181,7 +174,24 @@
             .getElementsByTagName('CompanionClickTracking')[0]
             .textContent.trim();
 
-          console.log(imageUrl, imageClickThroughUrl, imageClickTrackingUrl);
+          /* replace macros */
+          const WIDTH = 740;
+          const HEIGHT = 400;
+          let ad = adTemplate.replace('{{videoUrl}}', videoUrl);
+          ad = ad.replace('{{impressionUrl}}', impressionUrl);
+          ad = ad.replace('{{clickThroughUrl}}', clickThroughUrl);
+          ad = ad.replace('{{clickTrackingUrl}}', clickTrackingUrl);
+          ad = ad.replace('{{width}}', WIDTH);
+
+          /* prepare iframe */
+          const iframe = document.createElement('iframe');
+          iframe.width = `${WIDTH}px`;
+          iframe.height = `${HEIGHT}px`;
+          iframe.setAttribute('allow', 'autoplay; fullscreen');
+          document.body.appendChild(iframe);
+          iframe.contentWindow.document.open();
+          iframe.contentWindow.document.write(ad);
+          iframe.contentWindow.document.close();
         });
     </script>
   </body>
