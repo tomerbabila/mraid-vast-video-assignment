@@ -4,21 +4,25 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Ad Demo</title>
   </head>
   <body>
-    <script src="mraid.js"></script>
-
+    <script language="javascript" type="text/javascript">
+      const adTemplate =
+        `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+  </head>
+  <body>
+    <script src="mraid.js"></sc` +
+        `ript>
     <div
       id="container"
-      style="width: 320px; height: 480px; background-color: #ffffff"
     >
-      <video
-        id="adVideo"
-        webkit-playsinline
-        src="http://admarvel.s3.amazonaws.com/demo/mraid/OMW_SOUND_VIDEO_RENEW.iPhoneSmall.mp4"
-        autoplay="true"
-      ></video>
+      <video id="adVideo" webkit-playsinline src="{{videoUrl}}" muted></video>
     </div>
 
     <style type="text/css">
@@ -28,77 +32,22 @@
     </style>
 
     <script language="javascript" type="text/javascript">
-      const xhr = new XMLHttpRequest();
-
-      xhr.open(
-        'GET',
-        'https://run.mocky.io/v3/a7923657-00d8-4ca8-beb1-e56dcda7079d',
-        false
-      );
-      xhr.send();
-
-      const xmlDoc = xhr.responseXML;
-
-      const impressionUrl = xmlDoc
-        .getElementsByTagName('Impression')[0]
-        .textContent.trim();
-      const clickThroughUrl = xmlDoc
-        .getElementsByTagName('ClickThrough')[0]
-        .textContent.trim();
-      const clickTrackingUrl = xmlDoc
-        .getElementsByTagName('ClickTracking')[0]
-        .textContent.trim();
-      const videoUrl = xmlDoc
-        .getElementsByTagName('MediaFile')[0]
-        .textContent.trim();
-
-      const imageUrl = xmlDoc
-        .getElementsByTagName('StaticResource')[0]
-        .textContent.trim();
-      const companionClickThroughUrl = xmlDoc
-        .getElementsByTagName('CompanionClickThrough')[0]
-        .textContent.trim();
-      const companionClickTrackingUrl = xmlDoc
-        .getElementsByTagName('CompanionClickTracking')[0]
-        .textContent.trim();
-
-      document.getElementById('adVideo').setAttribute('src', `${videoUrl}`);
-      document.getElementById('adVideo').addEventListener('click', () => {
-        navigator.sendBeacon(clickTrackingUrl);
-        mraid.open(clickThroughUrl);
-      });
-    </script>
-
-    <script language="javascript" type="text/javascript">
-      document.getElementById('container').addEventListener(
-        'touchmove',
+      document.getElementById('container').addEventListener('touchmove',
         function (event) {
           event.preventDefault();
         },
         false
       );
-    </script>
+    </scr` +
+        `ipt>
 
     <script>
       function mraidIsReady() {
         mraid.removeEventListener('ready', mraidIsReady);
-
         prepareMyAd();
       }
 
       function prepareMyAd() {
-        // Right now it is assumed this SDK supports HTML5 video but may not support inline
-        if (mraid.supports('inlineVideo')) {
-          // Hide close button
-          mraid.useCustomClose(true);
-        }
-
-        // Force landscape orientation
-        mraid.setOrientationProperties({
-          allowOrientationChange: false,
-          forceOrientation: 'landscape',
-        });
-
         // Adjust dimensions for device using current orientation to find landscape values
         var screenSize = mraid.getScreenSize();
         var screenLandscapeWidth = screenSize.width;
@@ -108,12 +57,8 @@
           screenLandscapeWidth = screenSize.height;
           screenLandscapeHeight = screenSize.width;
         }
-
-        document.getElementById('container').style.width =
-          screenLandscapeWidth + 'px';
-        document.getElementById('container').style.height =
-          screenLandscapeHeight + 'px';
-
+        document.getElementById('container').style.width = screenLandscapeWidth + 'px';
+        document.getElementById('container').style.height = screenLandscapeHeight + 'px';
         // First video to fit full width and and then scale height
         var videoWidth = 320;
         var videoHeight = 180;
@@ -163,20 +108,14 @@
 
       function showMyAd() {
         // Count impressions at this point and play video ad
-        navigator.sendBeacon(impressionUrl);
-
+				navigator.sendBeacon("{{impressionUrl}}");
         document.getElementById('adVideo').load();
         document.getElementById('adVideo').play();
 
-        // If we can play inline then we can auto close the ad on finish
-        if (mraid.supports('inlineVideo')) {
-          // Close video on finish
-          document
-            .getElementById('adVideo')
-            .addEventListener('ended', function () {
-              mraid.close();
-            });
-        }
+				document.querySelector('#adVideo').addEventListener('click', function () {
+					top.postMessage({ type: "mraidopen", impression: "{{clickTrackingUrl}}", url: "{{clickThroughUrl}}"   }, "*");	
+				});
+
       }
 
       function setupViewport(width) {
@@ -190,7 +129,7 @@
           element.content = 'width=' + width + ', user-scalable=no';
         }
       }
-      setupViewport(320);
+      setupViewport({{width}});
 
       function doReadyCheck() {
         if (mraid.getState() == 'loading') {
@@ -199,8 +138,51 @@
           prepareMyAd();
         }
       }
-
       doReadyCheck();
+    </sc` +
+        `ript>
+</body>
+</html>`;
+
+      /* read ad XML */
+      fetch('https://run.mocky.io/v3/a7923657-00d8-4ca8-beb1-e56dcda7079d')
+        .then((response) => response.text())
+        .then((str) => new window.DOMParser().parseFromString(str, 'text/xml'))
+        .then((xmlDoc) => {
+          /* get ad parameters */
+          const impressionUrl = xmlDoc
+            .getElementsByTagName('Impression')[0]
+            .textContent.trim();
+          const clickThroughUrl = xmlDoc
+            .getElementsByTagName('ClickThrough')[0]
+            .textContent.trim();
+          const clickTrackingUrl = xmlDoc
+            .getElementsByTagName('ClickTracking')[0]
+            .textContent.trim();
+          const videoUrl = xmlDoc
+            .getElementsByTagName('MediaFile')[0]
+            .textContent.trim();
+
+          console.log(
+            impressionUrl,
+            videoUrl,
+            clickTrackingUrl,
+            clickThroughUrl
+          );
+
+          const companionAd = xmlDoc.getElementsByTagName('CompanionAds')[0];
+          const imageUrl = companionAd
+            .getElementsByTagName('StaticResource')[0]
+            .textContent.trim();
+          const imageClickThroughUrl = companionAd
+            .getElementsByTagName('CompanionClickThrough')[0]
+            .textContent.trim();
+          const imageClickTrackingUrl = companionAd
+            .getElementsByTagName('CompanionClickTracking')[0]
+            .textContent.trim();
+
+          console.log(imageUrl, imageClickThroughUrl, imageClickTrackingUrl);
+        });
     </script>
   </body>
 </html>
