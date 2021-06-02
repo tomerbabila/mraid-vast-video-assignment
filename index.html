@@ -23,12 +23,16 @@
       id="container"
     >
       <video id="adVideo" webkit-playsinline src="{{videoUrl}}" muted></video>
+			<img class="endImage" src="{{imageUrl}}" loading="lazy"   />
     </div>
 
     <style type="text/css">
       body {
         background-color: #ffffff;
       }
+			.endImage {
+				display: none;
+			}
     </style>
 
     <script language="javascript" type="text/javascript">
@@ -112,6 +116,16 @@
         document.getElementById('adVideo').load();
         document.getElementById('adVideo').play();
 
+				// on finish display the image
+				document.querySelector('#adVideo').addEventListener('ended', function () {
+					mraid.removeEventListener('ready', mraidIsReady);
+					document.querySelector('#adVideo').style.display = "none";
+					document.querySelector('.endImage').style.display = "block";
+					document.querySelector('.endImage').addEventListener('click', function () {
+						top.postMessage({ type: "mraidopen", impression: "{{imageClickTrackingUrl}}", url: "{{imageClickThroughUrl}}"   }, "*");	
+					});
+				});
+
 				document.querySelector('#adVideo').addEventListener('click', function () {
 					top.postMessage({ type: "mraidopen", impression: "{{clickTrackingUrl}}", url: "{{clickThroughUrl}}"   }, "*");	
 				});
@@ -129,7 +143,7 @@
           element.content = 'width=' + width + ', user-scalable=no';
         }
       }
-      setupViewport({{width}});
+			setupViewport({{width}});
 
       function doReadyCheck() {
         if (mraid.getState() == 'loading') {
@@ -182,6 +196,9 @@
           ad = ad.replace('{{clickThroughUrl}}', clickThroughUrl);
           ad = ad.replace('{{clickTrackingUrl}}', clickTrackingUrl);
           ad = ad.replace('{{width}}', WIDTH);
+          ad = ad.replace('{{imageUrl}}', imageUrl);
+          ad = ad.replace('{{imageClickThroughUrl}}', imageClickThroughUrl);
+          ad = ad.replace('{{imageClickTrackingUrl}}', imageClickTrackingUrl);
 
           /* prepare iframe */
           const iframe = document.createElement('iframe');
@@ -200,6 +217,17 @@
             mraidbridge.fireReadyEvent();
             mraidbridge.fireChangeEvent({ viewable: true });
           });
+
+          window.addEventListener(
+            'message',
+            (event) => {
+              if (event.data.type == 'mraidopen') {
+                navigator.sendBeacon(event.data.impression);
+                window.open(event.data.url, '_blank').focus();
+              }
+            },
+            false
+          );
         });
     </script>
   </body>
