@@ -192,6 +192,14 @@
           iframe.contentWindow.document.open();
           iframe.contentWindow.document.write(ad);
           iframe.contentWindow.document.close();
+
+          iframe.addEventListener('load', function () {
+            let mraidbridge = iframe.contentWindow.mraidbridge; // use mraid bridge to connect with mraid
+            // we're ready, fire the ready event
+            mraidbridge.setScreenSize(WIDTH, HEIGHT);
+            mraidbridge.fireReadyEvent();
+            mraidbridge.fireChangeEvent({ viewable: true });
+          });
         });
     </script>
   </body>
